@@ -7,6 +7,7 @@ use App\Models\InvoiceItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
@@ -20,31 +21,47 @@ class InvoiceController extends Controller
     // USER - Store invoice
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'address' => 'required|string|min:10|max:100',
-            'postal_code' => 'required|string|regex:/^\d{5}$/',
-            'items' => 'required|array',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-        ]);
+    $validated = $request->validate([
+        'address' => 'required|string|min:10|max:100',
+        'postal_code' => 'required|string|regex:/^\d{5}$/',
+        'items' => 'required|array|min:1',
+        'items.*.product_id' => 'required|exists:products,id',
+        'items.*.quantity' => 'required|integer|min:1',
+    ]);
 
-        // Generate invoice number
-        $invoiceNumber = 'INV-' . date('YmdHis') . '-' . Auth::id();
+    // VALIDATE ALL ITEMS FIRST before any DB operations
+    $validated_items = [];
+    $totalPrice = 0;
 
-        // Calculate total
-        $totalPrice = 0;
-        foreach ($validated['items'] as $item) {
-            $product = Product::find($item['product_id']);
-            
-            // Check stock
-            if ($product->stock < $item['quantity']) {
-                return back()->withErrors(['stock' => 'Stock tidak cukup untuk ' . $product->name]);
-            }
-
-            $totalPrice += $product->price * $item['quantity'];
+    foreach ($validated['items'] as $item) {
+        $product = Product::lockForUpdate()->find($item['product_id']);
+        
+        if (!$product) {
+            return back()->withErrors([
+                'stock' => 'Produk tidak ditemukan'
+            ])->withInput();
         }
 
-        // Create invoice
+        if ($product->stock < $item['quantity']) {
+            return back()->withErrors([
+                'stock' => "Stock tidak cukup untuk {$product->name}. Available: {$product->stock}"
+            ])->withInput();
+        }
+
+        $subtotal = $product->price * $item['quantity'];
+        $totalPrice += $subtotal;
+        
+        $validated_items[] = [
+            'product' => $product,
+            'quantity' => $item['quantity'],
+            'subtotal' => $subtotal,
+        ];
+    }
+
+    // Use transaction for atomicity
+    return DB::transaction(function () use ($validated_items, $validated, $totalPrice) {
+        $invoiceNumber = 'INV-' . date('YmdHis') . '-' . Auth::id();
+
         $invoice = Invoice::create([
             'invoice_number' => $invoiceNumber,
             'user_id' => Auth::id(),
@@ -53,24 +70,22 @@ class InvoiceController extends Controller
             'total_price' => $totalPrice,
         ]);
 
-        // Create invoice items
-        foreach ($validated['items'] as $item) {
-            $product = Product::find($item['product_id']);
-            $subtotal = $product->price * $item['quantity'];
-
+        foreach ($validated_items as $item) {
             InvoiceItem::create([
                 'invoice_id' => $invoice->id,
-                'product_id' => $item['product_id'],
+                'product_id' => $item['product']->id,
                 'quantity' => $item['quantity'],
-                'subtotal' => $subtotal,
+                'subtotal' => $item['subtotal'],
             ]);
 
-            // Reduce stock
-            $product->decrement('stock', $item['quantity']);
+            // Decrement after confirmed
+            $item['product']->decrement('stock', $item['quantity']);
         }
 
-        return redirect()->route('invoices.show', $invoice)->with('success', 'Invoice created successfully.');
-    }
+        return redirect()->route('invoices.show', $invoice)
+            ->with('success', 'Invoice created successfully.');
+    });
+}
 
     // USER - Show invoice
     public function show(Invoice $invoice)
@@ -86,12 +101,14 @@ class InvoiceController extends Controller
     // USER - Print invoice
     public function print(Invoice $invoice)
     {
-        if ($invoice->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
-            return redirect()->route('products.index')->with('error', 'Unauthorized access.');
-        }
+    if ($invoice->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
+        return redirect()->route('products.index')
+            ->with('error', 'Unauthorized access.');
+    }
 
-        $invoice->load('invoiceItems.product', 'user');
-        return view('user.invoice.print', compact('invoice'));
+    // Correct syntax for multiple relationships
+    $invoice->load(['invoiceItems.product', 'user']);
+    return view('user.invoice.print', compact('invoice'));
     }
 
     // USER - List invoices

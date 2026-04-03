@@ -7,25 +7,32 @@
     <title>Invoice #{{ $invoice->invoice_number }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-    body {
-        padding: 20px;
-    }
-
-    @media print {
         body {
-            background: white;
+            padding: 20px;
         }
 
-        .no-print {
-            display: none;
-        }
-    }
+        @media print {
+            body {
+                background: white;
+            }
 
-    .invoice-header {
-        border-bottom: 3px solid #007bff;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-    }
+            .no-print {
+                display: none;
+            }
+        }
+
+        .invoice-header {
+            border-bottom: 3px solid #007bff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .invoice-total {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 
@@ -62,6 +69,7 @@
             </div>
         </div>
 
+        <h6 class="mb-3">Order Details</h6>
         <table class="table table-bordered">
             <thead class="table-dark">
                 <tr>
@@ -76,3 +84,32 @@
                 @php $no = 1; @endphp
                 @foreach($invoice->invoiceItems as $item)
                 <tr>
+                    <td>{{ $no++ }}</td>
+                    <td>{{ $item->product->name }}</td>
+                    <td>Rp. {{ number_format($item->product->price, 0, ',', '.') }}</td>
+                    <td>{{ $item->quantity }}</td>
+                    <td>Rp. {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <div class="invoice-total">
+            <div class="row">
+                <div class="col-md-8 text-end">
+                    <h5><strong>Total Amount:</strong></h5>
+                </div>
+                <div class="col-md-4">
+                    <h5>Rp. {{ number_format($invoice->total_price, 0, ',', '.') }}</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 text-center text-muted">
+            <p>Thank you for your order!</p>
+            <p>Printed on {{ now()->format('d-m-Y H:i') }}</p>
+        </div>
+    </div>
+</body>
+
+</html>

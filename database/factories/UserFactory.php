@@ -16,11 +16,12 @@ class UserFactory extends Factory
      *
      * @return array<string, mixed>
      */
+    // database/factories/UserFactory.php
     public function definition()
     {
         return [
             'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail() . '@gmail.com',
+            'email' => $this->faker->unique()->firstName() . $this->faker->numerify('###') . '@gmail.com',
             'password' => Hash::make('password123'),
             'phone' => '08' . $this->faker->numerify('##########'),
             'role' => 'user',

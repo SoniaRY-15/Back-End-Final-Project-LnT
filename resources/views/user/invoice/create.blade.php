@@ -111,7 +111,7 @@ function updateTotal() {
     const items = [];
     const summary = [];
 
-    checkboxes.forEach(checkbox => {
+    checkboxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         const quantityInput = row.querySelector('.quantity-input');
         const price = parseInt(row.dataset.price);
@@ -121,18 +121,38 @@ function updateTotal() {
         totalPrice += subtotal;
         row.querySelector('.subtotal').textContent = 'Rp. ' + subtotal.toLocaleString('id-ID');
 
+        // Build items array for form submission
         items.push({
             product_id: checkbox.value,
             quantity: quantity
         });
 
         const productName = row.querySelector('label').textContent.trim();
-        summary.push(`<div>${productName} x${quantity}</div>`);
+        summary.push(`<div class="mb-2">${productName} x${quantity} = Rp. ${subtotal.toLocaleString('id-ID')}</div>`);
     });
 
     document.getElementById('totalPrice').textContent = totalPrice.toLocaleString('id-ID');
-    document.getElementById('itemsInput').value = JSON.stringify(items);
-    document.getElementById('cartSummary').innerHTML = summary.length > 0 ? summary.join('') : 'No items selected';
+    
+    // Convert items array to form-friendly format
+    const form = document.querySelector('form');
+    form.innerHTML = form.innerHTML; // Reset
+    
+    items.forEach((item, index) => {
+        const input1 = document.createElement('input');
+        input1.type = 'hidden';
+        input1.name = `items[${index}][product_id]`;
+        input1.value = item.product_id;
+        form.appendChild(input1);
+
+        const input2 = document.createElement('input');
+        input2.type = 'hidden';
+        input2.name = `items[${index}][quantity]`;
+        input2.value = item.quantity;
+        form.appendChild(input2);
+    });
+
+    document.getElementById('cartSummary').innerHTML = summary.length > 0 ? 
+        summary.join('') : 'No items selected';
 }
 
 document.querySelectorAll('.product-checkbox').forEach(checkbox => {
@@ -140,6 +160,7 @@ document.querySelectorAll('.product-checkbox').forEach(checkbox => {
         const row = this.closest('tr');
         const quantityInput = row.querySelector('.quantity-input');
         quantityInput.disabled = !this.checked;
+        if (!this.checked) quantityInput.value = 1;
         updateTotal();
     });
 });

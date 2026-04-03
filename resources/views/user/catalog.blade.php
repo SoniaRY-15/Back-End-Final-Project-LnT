@@ -30,7 +30,10 @@
                 @else
                 <small class="text-success">Stock: {{ $product->stock }}</small><br>
                 <button class="btn btn-sm btn-primary w-100 mt-2"
-                    onclick="addToCart({{ $product->id }}, '{{ $product->name }}', {{ $product->price }})">
+                    data-product-id="{{ $product->id }}"
+                    data-product-name="{{ $product->name }}"
+                    data-product-price="{{ $product->price }}"
+                    onclick="addToCart(this)">
                     Add to Cart
                 </button>
                 @endif
@@ -43,6 +46,18 @@
     </div>
     @endforelse
 </div>
+
+@section('scripts')
+<script>
+function addToCart(button) {
+    const productId = button.dataset.productId;
+    const productName = button.dataset.productName;
+    const productPrice = button.dataset.productPrice;
+    
+    alert('Added ' + productName + ' to cart. Go to "Create Invoice" to proceed.');
+}
+</script>
+@endsection
 
 <div class="row mt-4">
     <div class="col-md-12">

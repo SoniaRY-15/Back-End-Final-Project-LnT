@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -62,6 +63,11 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
+
             $imagePath = $request->file('image')->store('products', 'public');
             $validated['image'] = $imagePath;
         }
@@ -74,6 +80,11 @@ class ProductController extends Controller
     // ADMIN - Delete product
     public function destroy(Product $product)
     {
+        // Delete image if exists
+        if ($product->image && Storage::disk('public')->exists($product->image)) {
+            Storage::disk('public')->delete($product->image);
+        }
+
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }
