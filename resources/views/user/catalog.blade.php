@@ -5,7 +5,7 @@
 @section('content')
 <div class="row">
     <div class="col-md-12">
-        <h2 class="mb-4">📚 Product Catalog</h2>
+        <h2 class="mb-4">Product Catalog :D</h2>
     </div>
 </div>
 
@@ -47,6 +47,14 @@
     @endforelse
 </div>
 
+<div class="row mt-4">
+    <div class="col-md-12 d-flex justify-content-center">
+        {{ $products->links('pagination::bootstrap-5') }}
+    </div>
+</div>
+
+@endsection
+
 @section('scripts')
 <script>
 function addToCart(button) {
@@ -54,21 +62,6 @@ function addToCart(button) {
     const productName = button.dataset.productName;
     const productPrice = button.dataset.productPrice;
     
-    alert('Added ' + productName + ' to cart. Go to "Create Invoice" to proceed.');
-}
-</script>
-@endsection
-
-<div class="row mt-4">
-    <div class="col-md-12">
-        {{ $products->links() }}
-    </div>
-</div>
-@endsection
-
-@section('scripts')
-<script>
-function addToCart(productId, productName, price) {
     alert('Added ' + productName + ' to cart. Go to "Create Invoice" to proceed.');
 }
 </script>

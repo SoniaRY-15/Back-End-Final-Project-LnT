@@ -34,7 +34,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">📦 Inventory System</a>
+            <a class="navbar-brand" href="/">ChipiChapa Inventory System</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -109,7 +109,7 @@
     </div>
 
     <footer class="bg-dark text-white text-center py-4 mt-5">
-        <p>&copy; 2026 Inventory System. All rights reserved.</p>
+        <p>&copy; Tugas Final Project LnT Backend - Sonia RY</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
