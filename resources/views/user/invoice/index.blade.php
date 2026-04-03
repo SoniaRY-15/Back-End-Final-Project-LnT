@@ -8,7 +8,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">📋 My Invoices</h5>
+                <h5 class="mb-0">My Invoices</h5>
                 <a href="{{ route('invoices.create') }}" class="btn btn-light btn-sm">+ Create Invoice</a>
             </div>
             <div class="card-body">

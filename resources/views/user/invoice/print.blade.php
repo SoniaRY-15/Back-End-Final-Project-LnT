@@ -40,13 +40,13 @@
     <div class="container">
         <div class="row no-print mb-3">
             <div class="col-md-12">
-                <button class="btn btn-primary" onclick="window.print()">🖨️ Print Invoice</button>
+                <button class="btn btn-primary" onclick="window.print()">Print Invoice</button>
                 <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-secondary">Back</a>
             </div>
         </div>
 
         <div class="invoice-header">
-            <h1>📦 INVOICE</h1>
+            <h1>INVOICE CHIPICHAPA</h1>
             <p class="mb-0"><strong>Invoice Number:</strong> {{ $invoice->invoice_number }}</p>
             <p><strong>Date:</strong> {{ $invoice->created_at->format('d-m-Y H:i') }}</p>
         </div>
@@ -95,12 +95,10 @@
         </table>
 
         <div class="invoice-total">
-            <div class="row">
-                <div class="col-md-8 text-end">
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center">
                     <h5><strong>Total Amount:</strong></h5>
-                </div>
-                <div class="col-md-4">
-                    <h5>Rp. {{ number_format($invoice->total_price, 0, ',', '.') }}</h5>
+                    <h4>Rp. {{ number_format($invoice->total_price, 0, ',', '.') }}</h4>
                 </div>
             </div>
         </div>
